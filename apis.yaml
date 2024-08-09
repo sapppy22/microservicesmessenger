@@ -1,0 +1,1123 @@
+openapi: 3.0.1
+info:
+  title: Chatroom and User Management API
+paths:
+  # ------------------------------------------------------------------------------
+  /api/users:
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                mobile:
+                  type: string
+                  pattern: '[6-9]^[0-9]{9}$'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  mobile:
+                    type: string
+                  user_id:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+                  modified_at:
+                    type: string
+                    format: date-time 
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Conflict, username/email/mobile already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      summary: Get all users with sorting and pagination
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pagesize
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: sortby
+          schema:
+            type: string
+            enum: [created_at, username, email]
+            default: created_at
+          description: Field to sort the users by
+        - in: query
+          name: sortorder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Order of sorting (ascending or descending)
+        - in: query
+          name: createdAfter
+          schema:
+            type: string
+            format: date-time
+          description: Filter users createdc after this date and time
+        - in: query
+          name: createdBefore 
+          schema:
+            type: string
+            format: date-time
+          description: Filter users created before this date and time
+        - in: query
+          name: modifiedAfter
+          schema:
+            type: string
+            format: date-time
+          description: Filter users modified after this date and time
+        - in: query
+          name: modifiedBefore 
+          schema:
+            type: string
+            format: date-time
+          description: Filter users modified before this date and time
+
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        username:
+                          type: string
+                        email:
+                          type: string
+                        mobile:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  # -------------------------------x--------------------------------------------------------
+  /api/users/{user_id}:
+    get:
+      summary: Get user by ID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  mobile:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    put:
+      summary: Update user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type : string
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                mobile:
+                  type: string
+                  pattern: '^[6-9][0-9]{9}$'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  mobile:
+                    type: string
+                  password:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      summary: Delete user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+# ---------------------------------------x------------------------------------------------------
+  /api/chatrooms:
+    post:
+      summary: Create a new chatroom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Chatroom created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      summary: Get all chatrooms
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pagesize
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: sortby
+          schema:
+            type: string
+            enum: [createdAt,modifiedAt]
+            default: createdAt
+          description: Field to sort the chatrooms by
+        - in: query
+          name: sortorder
+          schema:
+            type: string
+            enum: [asc,desc]
+            default: desc
+          description: Order to follow while sorting
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter chatrooms by name 
+        - in: query
+          name: created_after
+          schema:
+            type: string
+            format: date-time
+          description: Filter chatrooms created after this date and time
+        - in: query
+          name: created_before (modified also)
+          schema:
+            type: string
+            format: date-time
+          description: Filter chatrooms created before this date and time
+        - in: query
+          name: modified_after
+          schema:
+            type: string
+            format: date-time
+          description: Filter chatrooms modified after this date and time
+        - in: query
+          name: modified_before 
+          schema:
+            type: string
+            format: date-time
+          description: Filter chatrooms modified before this date and time
+      responses:
+        '200':
+          description: List of chatrooms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  chatrooms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        modified_at:
+                          type: string
+                          format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+# ----------------------------------------x-----------------------------------------------
+  /api/chatrooms/{chatroom_id}:
+    get:
+      summary: Get chatroom by ID
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chatroom details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  timestamps:
+                    type: object
+                    properties:
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+                      last_activity:
+                        type: string
+                        format: date-time
+                  timezone:
+                    type: string
+                    description: The timezone in which the timestamps are provided 
+    
+        '404':
+          description: Chatroom not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    put:
+      summary: Update chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Chatroom updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Chatroom not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      summary: Delete chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Chatroom deleted successfully
+        '404':
+          description: Chatroom not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+# ----------------------------------x---------------------------------------------------
+  /api/chatrooms/{chatroom_id}/users:
+    post:
+      summary: Add user to chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                role:
+                  type: string
+                  enum: [member , admin] 
+                  default: member
+      responses:
+        '201':
+          description: User added to chatroom successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                  chatroom_id:
+                    type: string
+                  role:
+                    type: string
+                  joined_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Chatroom or user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      summary: Get users in chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pagesize
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: sortby
+          schema:
+            type: string
+            enum: [username, joined_at]
+            default: joined_at
+        - in: query
+          name: sortorder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter users by name 
+      responses:
+        '200':
+          description: List of users in chatroom
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        username:
+                          type: string
+                        email:
+                          type: string
+                        role:
+                          type: string
+                        joined_at:
+                          type: string
+                          format: date-time
+        '404':
+          description: Chatroom not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+# ----------------------------------x-------------------------------------------------
+  /api/chatrooms/{chatroom_id}/users/{user_id}:
+    delete:
+      summary: Remove user from chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User removed from chatroom successfully
+        '404':
+          description: Chatroom or user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+# -------------------------------------------x---------------------------------------
+  /api/chatrooms/{chatroom_id}/messages:
+    post:
+      summary: Send a message encrypted to a specific chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - content
+              properties:
+                user_id:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '201':
+          description: Encrypted Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  user_id:
+                    type: string
+                  chatroom_id:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  encrypted_content:
+                    type: string
+                  encryption_metadata:
+                    type: object
+                    properties:
+                      algorithm:
+                        type: string
+                      key_id:
+                        type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Chatroom not found or user not a member
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+      
+    get:
+      summary: Retrieve and search messages from a specific chatroom
+      parameters:
+        - in: path
+          name: chatroom_id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pagesize
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search for a string/sentence in the message content
+        - in: query
+          name: sortby
+          schema:
+            type: string
+            enum: [sendat,username,email]
+            default: sendat
+          description: Field to sort the messages by
+        - in: query
+          name: sortorder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Order of sorting (ascending or descending)
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        user_id:
+                          type: string
+                        chatroom_id:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        decrypted_content:
+                          type: string
+                        decryption_status:
+                          type: string
+                          enum: [success, failed]
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Chatroom not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+# ------------------------------------------------x----------------------------------------
+
+
+  /api/users/{user_id}/messages:
+    get:
+      summary: Get decrypted messages from all chatrooms the user is a member of
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pagesize
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: sortby
+          schema:
+            type: string
+            enum: [sendat, username, email]
+            default: sendat
+          description: Field to sort the messages by
+        - in: query
+          name: sortorder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Order of sorting (ascending or descending)
+      responses:
+        '200':
+          description: Decrypted messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        chatroom_id:
+                          type: string
+                        chatroom_name:
+                          type: string
+                        sender_id:
+                          type: string
+                        sender_username:
+                          type: string
+                        decrypted_content:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        decryption_status:
+                          type: string
+                          enum: [success, failed]
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+
+# --------x-
